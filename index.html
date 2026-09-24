@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>US States Visited Map</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <header class="app-header">
+    <h1>States Visited</h1>
+    <div class="stats" id="stats">0 / 51 visited</div>
+  </header>
+
+  <main class="layout">
+    <section class="map-panel">
+      <div id="map"></div>
+      <div id="tooltip" class="tooltip hidden"></div>
+      <p class="hint">Click a state to toggle visited.</p>
+    </section>
+
+    <aside class="sidebar">
+      <div class="control-group">
+        <label for="search-input">Add / find a state</label>
+        <div class="search-wrap">
+          <input id="search-input" type="text" placeholder="Start typing a state name..." autocomplete="off">
+          <div id="autocomplete-list" class="autocomplete-list hidden"></div>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button id="select-all" class="btn">Select All</button>
+        <button id="clear-all" class="btn btn-secondary">Clear All</button>
+      </div>
+
+      <details class="control-group">
+        <summary>Bulk edit list</summary>
+        <p class="muted">Paste state names or abbreviations, separated by commas or new lines. This <em>replaces</em> the current visited list.</p>
+        <textarea id="bulk-textarea" rows="5" placeholder="CA, Oregon, TX, New York"></textarea>
+        <button id="bulk-apply" class="btn">Apply List</button>
+      </details>
+
+      <details class="control-group">
+        <summary>Import / Export</summary>
+        <p class="muted">Save your list to a file, or load one back in.</p>
+        <div class="button-row">
+          <button id="export-btn" class="btn">Export JSON</button>
+          <label class="btn file-btn">
+            Import JSON
+            <input type="file" id="import-file" accept="application/json" hidden>
+          </label>
+        </div>
+        <button id="export-image-btn" class="btn btn-full">Export Map Image (PNG)</button>
+      </details>
+
+      <div class="visited-panel">
+        <h2>Visited (<span id="visited-count">0</span>)</h2>
+        <ul id="visited-list" class="visited-list"></ul>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<div id="confirm-overlay" class="modal-overlay hidden">
+  <div class="modal">
+    <p id="confirm-message"></p>
+    <div class="button-row">
+      <button id="confirm-yes" class="btn btn-danger">Clear All</button>
+      <button id="confirm-no" class="btn btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script src="states.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
