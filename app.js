@@ -386,11 +386,12 @@
 
   // ---------- confirm modal (native confirm() is unreliable in embedded webviews) ----------
 
-  function showConfirm(message, onConfirm) {
+  function showConfirm(message, onConfirm, confirmLabel) {
     const overlay = document.getElementById("confirm-overlay");
     const yesBtn = document.getElementById("confirm-yes");
     const noBtn = document.getElementById("confirm-no");
     document.getElementById("confirm-message").textContent = message;
+    yesBtn.textContent = confirmLabel || "Confirm";
 
     function close() {
       overlay.classList.add("hidden");
@@ -413,7 +414,39 @@
     document.getElementById("select-all").addEventListener("click", selectAll);
     document.getElementById("clear-all").addEventListener("click", () => {
       if (visited.size === 0) return;
-      showConfirm(`Clear all ${visited.size} visited state${visited.size === 1 ? "" : "s"}?`, clearAll);
+      showConfirm(`Clear all ${visited.size} visited state${visited.size === 1 ? "" : "s"}?`, clearAll, "Clear All");
+    });
+  }
+
+  // ---------- quick-load preset lists ----------
+
+  function loadPresetList(url, label) {
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (!Array.isArray(data)) throw new Error("Expected a JSON array of state names/abbreviations.");
+        const resolved = data.map(resolveAbbr).filter(Boolean);
+        const apply = () => setVisitedList(resolved);
+        if (visited.size > 0) {
+          showConfirm(`Replace the current list with ${label} saved list (${resolved.length} states)?`, apply, "Replace List");
+        } else {
+          apply();
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        alert(`Could not load ${label} list: ${err.message}`);
+      });
+  }
+
+  function initPresetButtons() {
+    document.querySelectorAll("[data-list-url]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        loadPresetList(btn.dataset.listUrl, btn.dataset.listLabel);
+      });
     });
   }
 
@@ -434,5 +467,6 @@
   initBulkEdit();
   initImportExport();
   initButtons();
+  initPresetButtons();
   renderAll();
 })();

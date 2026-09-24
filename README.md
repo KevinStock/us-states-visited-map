@@ -20,18 +20,33 @@ then visit `http://localhost:8000`.
 
 ## Changing which states are marked visited
 
-There are four ways to edit the list, all of which stay in sync:
+There are five ways to edit the list, all of which stay in sync:
 
 1. **Click a state** on the map to toggle it.
 2. **Search box** — start typing a state name or abbreviation, click a
    result (or press Enter) to toggle it.
-3. **Bulk edit** — open "Bulk edit list" in the sidebar, paste a
+3. **Quick load a saved list** — one-click buttons that replace the current
+   list with a preset from [data/](data/) (see below).
+4. **Bulk edit** — open "Bulk edit list" in the sidebar, paste a
    comma- or newline-separated list of state names/abbreviations, and click
    *Apply List*. This replaces the whole visited list at once — handy for
    pasting in a list from somewhere else.
-4. **Import / Export** — export the current list as a JSON file (array of
+5. **Import / Export** — export the current list as a JSON file (array of
    abbreviations), or import a JSON file to load a list back in. Useful for
    backing up your list or sharing it.
+
+## Preset lists
+
+[data/kevin-visited.json](data/kevin-visited.json) and
+[data/family-visited.json](data/family-visited.json) are JSON arrays of
+state abbreviations, loaded via the "Quick load a saved list" buttons. To
+add another preset:
+
+1. Drop a new JSON file (array of abbreviations or full names) into `data/`.
+2. Add a button in [index.html](index.html) with a `data-list-url` pointing
+   at the file and a `data-list-label` for the confirmation message — see
+   the existing `#load-kevin-btn` / `#load-family-btn` buttons for the
+   pattern. No other wiring is needed.
 
 The list is saved to the browser's `localStorage`, so it persists across
 reloads on the same machine/browser. To set a different starting list for a

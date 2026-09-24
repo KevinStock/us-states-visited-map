@@ -34,6 +34,15 @@
         <button id="clear-all" class="btn btn-secondary">Clear All</button>
       </div>
 
+      <div class="control-group">
+        <label>Quick load a saved list</label>
+        <p class="muted">One click to replace the current list with a saved set of states.</p>
+        <div class="button-row">
+          <button id="load-kevin-btn" class="btn btn-secondary" data-list-url="data/kevin-visited.json" data-list-label="Kevin's">Kevin's States</button>
+          <button id="load-family-btn" class="btn btn-secondary" data-list-url="data/family-visited.json" data-list-label="Family's">Family's States</button>
+        </div>
+      </div>
+
       <details class="control-group">
         <summary>Bulk edit list</summary>
         <p class="muted">Paste state names or abbreviations, separated by commas or new lines. This <em>replaces</em> the current visited list.</p>
