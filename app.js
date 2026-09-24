@@ -2,6 +2,7 @@
   "use strict";
 
   const STORAGE_KEY = "visitedStates";
+  const CUSTOM_PRESETS_KEY = "customPresets";
   const TOPO_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
   // Lookup helpers built from STATE_FIPS (defined in states.js)
@@ -29,6 +30,20 @@
 
   function saveVisited() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...visited]));
+  }
+
+  function loadCustomPresets() {
+    try {
+      const raw = localStorage.getItem(CUSTOM_PRESETS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {
+      console.warn("Could not read saved presets.", e);
+    }
+    return {};
+  }
+
+  function saveCustomPresets(presets) {
+    localStorage.setItem(CUSTOM_PRESETS_KEY, JSON.stringify(presets));
   }
 
   // ---------- mutation ----------
@@ -408,6 +423,43 @@
     overlay.classList.remove("hidden");
   }
 
+  // ---------- name-prompt modal (native prompt() is unreliable in embedded webviews) ----------
+
+  function showNamePrompt(defaultValue, onSave) {
+    const overlay = document.getElementById("name-overlay");
+    const input = document.getElementById("preset-name-input");
+    const saveBtn = document.getElementById("name-save");
+    const cancelBtn = document.getElementById("name-cancel");
+    input.value = defaultValue || "";
+
+    function close() {
+      overlay.classList.add("hidden");
+      saveBtn.removeEventListener("click", onSaveClick);
+      cancelBtn.removeEventListener("click", close);
+      input.removeEventListener("keydown", onKeydown);
+    }
+    function onSaveClick() {
+      const name = input.value.trim();
+      if (!name) {
+        input.focus();
+        return;
+      }
+      close();
+      onSave(name);
+    }
+    function onKeydown(e) {
+      if (e.key === "Enter") onSaveClick();
+      else if (e.key === "Escape") close();
+    }
+
+    saveBtn.addEventListener("click", onSaveClick);
+    cancelBtn.addEventListener("click", close);
+    input.addEventListener("keydown", onKeydown);
+    overlay.classList.remove("hidden");
+    input.focus();
+    input.select();
+  }
+
   // ---------- buttons ----------
 
   function initButtons() {
@@ -420,6 +472,15 @@
 
   // ---------- quick-load preset lists ----------
 
+  function applyListWithConfirm(abbrs, label) {
+    const apply = () => setVisitedList(abbrs);
+    if (visited.size > 0) {
+      showConfirm(`Replace the current list with ${label} (${abbrs.length} states)?`, apply, "Replace List");
+    } else {
+      apply();
+    }
+  }
+
   function loadPresetList(url, label) {
     fetch(url)
       .then((res) => {
@@ -429,12 +490,7 @@
       .then((data) => {
         if (!Array.isArray(data)) throw new Error("Expected a JSON array of state names/abbreviations.");
         const resolved = data.map(resolveAbbr).filter(Boolean);
-        const apply = () => setVisitedList(resolved);
-        if (visited.size > 0) {
-          showConfirm(`Replace the current list with ${label} saved list (${resolved.length} states)?`, apply, "Replace List");
-        } else {
-          apply();
-        }
+        applyListWithConfirm(resolved, `${label} saved list`);
       })
       .catch((err) => {
         console.error(err);
@@ -447,6 +503,85 @@
       btn.addEventListener("click", () => {
         loadPresetList(btn.dataset.listUrl, btn.dataset.listLabel);
       });
+    });
+  }
+
+  // ---------- custom presets (saved locally, from an imported file) ----------
+
+  function addCustomPreset(name, abbrs) {
+    const presets = loadCustomPresets();
+    presets[name] = abbrs;
+    saveCustomPresets(presets);
+    renderCustomPresetButtons();
+  }
+
+  function removeCustomPreset(name) {
+    const presets = loadCustomPresets();
+    delete presets[name];
+    saveCustomPresets(presets);
+    renderCustomPresetButtons();
+  }
+
+  function renderCustomPresetButtons() {
+    const container = document.getElementById("custom-preset-list");
+    container.innerHTML = "";
+    const presets = loadCustomPresets();
+    Object.keys(presets)
+      .sort((a, b) => a.localeCompare(b))
+      .forEach((name) => {
+        const abbrs = presets[name];
+        const chip = document.createElement("div");
+        chip.className = "preset-chip";
+
+        const btn = document.createElement("button");
+        btn.className = "preset-chip-btn";
+        btn.textContent = name;
+        btn.title = `Load "${name}" (${abbrs.length} states)`;
+        btn.addEventListener("click", () => applyListWithConfirm(abbrs, `"${name}"`));
+
+        const del = document.createElement("button");
+        del.className = "chip-remove";
+        del.textContent = "×";
+        del.setAttribute("aria-label", `Delete preset ${name}`);
+        del.addEventListener("click", (e) => {
+          e.stopPropagation();
+          showConfirm(`Delete the "${name}" preset? This can't be undone.`, () => removeCustomPreset(name), "Delete");
+        });
+
+        chip.appendChild(btn);
+        chip.appendChild(del);
+        container.appendChild(chip);
+      });
+  }
+
+  function initCustomPresetImport() {
+    document.getElementById("preset-file-input").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          if (!Array.isArray(parsed)) throw new Error("Expected a JSON array of state names/abbreviations.");
+          const resolved = parsed.map(resolveAbbr).filter(Boolean);
+          if (resolved.length === 0) throw new Error("No recognizable states found in that file.");
+
+          const defaultName = file.name.replace(/\.json$/i, "");
+          showNamePrompt(defaultName, (name) => {
+            const existing = loadCustomPresets();
+            if (existing[name]) {
+              showConfirm(`A preset named "${name}" already exists. Overwrite it?`, () => addCustomPreset(name, resolved), "Overwrite");
+            } else {
+              addCustomPreset(name, resolved);
+            }
+          });
+        } catch (err) {
+          alert("Could not read file: " + err.message);
+        } finally {
+          e.target.value = "";
+        }
+      };
+      reader.readAsText(file);
     });
   }
 
@@ -468,5 +603,7 @@
   initImportExport();
   initButtons();
   initPresetButtons();
+  initCustomPresetImport();
+  renderCustomPresetButtons();
   renderAll();
 })();

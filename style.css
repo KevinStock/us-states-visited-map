@@ -154,7 +154,8 @@ body {
 }
 
 #search-input,
-#bulk-textarea {
+#bulk-textarea,
+#preset-name-input {
   width: 100%;
   background: var(--panel-bg-light);
   border: 1px solid var(--border);
@@ -167,9 +168,14 @@ body {
 }
 
 #search-input:focus,
-#bulk-textarea:focus {
+#bulk-textarea:focus,
+#preset-name-input:focus {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
+}
+
+#preset-name-input {
+  margin-bottom: 14px;
 }
 
 .autocomplete-list {
@@ -341,4 +347,38 @@ body {
 .btn-danger {
   background: var(--danger);
   color: #1c0b0b;
+}
+
+.preset-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.preset-chip-list:empty {
+  margin-top: 0;
+}
+
+.preset-chip {
+  display: flex;
+  align-items: center;
+  background: var(--panel-bg-light);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.preset-chip-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 4px 6px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.preset-chip .chip-remove {
+  padding: 6px 8px;
 }

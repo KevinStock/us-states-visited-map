@@ -41,6 +41,7 @@
           <button id="load-kevin-btn" class="btn btn-secondary" data-list-url="data/kevin-visited.json" data-list-label="Kevin's">Kevin's States</button>
           <button id="load-family-btn" class="btn btn-secondary" data-list-url="data/family-visited.json" data-list-label="Family's">Family's States</button>
         </div>
+        <div id="custom-preset-list" class="preset-chip-list"></div>
       </div>
 
       <details class="control-group">
@@ -61,6 +62,10 @@
           </label>
         </div>
         <button id="export-image-btn" class="btn btn-full">Export Map Image (PNG)</button>
+        <label class="btn btn-secondary btn-full file-btn">
+          Save New Preset from File
+          <input type="file" id="preset-file-input" accept="application/json" hidden>
+        </label>
       </details>
 
       <div class="visited-panel">
@@ -77,6 +82,17 @@
     <div class="button-row">
       <button id="confirm-yes" class="btn btn-danger">Clear All</button>
       <button id="confirm-no" class="btn btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="name-overlay" class="modal-overlay hidden">
+  <div class="modal">
+    <p>Save this list as a preset:</p>
+    <input id="preset-name-input" type="text" placeholder="Preset name" maxlength="40">
+    <div class="button-row">
+      <button id="name-save" class="btn">Save Preset</button>
+      <button id="name-cancel" class="btn btn-secondary">Cancel</button>
     </div>
   </div>
 </div>

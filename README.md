@@ -40,13 +40,20 @@ There are five ways to edit the list, all of which stay in sync:
 [data/kevin-visited.json](data/kevin-visited.json) and
 [data/family-visited.json](data/family-visited.json) are JSON arrays of
 state abbreviations, loaded via the "Quick load a saved list" buttons. To
-add another preset:
+add another *built-in* preset (bundled in the repo, available to everyone):
 
 1. Drop a new JSON file (array of abbreviations or full names) into `data/`.
 2. Add a button in [index.html](index.html) with a `data-list-url` pointing
    at the file and a `data-list-label` for the confirmation message — see
    the existing `#load-kevin-btn` / `#load-family-btn` buttons for the
    pattern. No other wiring is needed.
+
+You can also save your own preset without touching the repo: in
+**Import / Export**, click **Save New Preset from File**, pick a JSON file
+(array of state names/abbreviations), and give it a name. It's saved to
+that browser's `localStorage` and shows up as a chip next to Kevin's/
+Family's buttons — click the chip to load it, or the "×" to delete it.
+Since it's local storage, it only shows up in the browser it was saved in.
 
 The list is saved to the browser's `localStorage`, so it persists across
 reloads on the same machine/browser. To set a different starting list for a
